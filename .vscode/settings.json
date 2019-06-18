@@ -1,4 +1,7 @@
 {
   "editor.fontFamily": "'Operator Mono Lig'",
-  "editor.fontLigatures": true
+  "editor.fontLigatures": true,
+  "files.exclude": {
+    "node_modules/": true
+  }
 }

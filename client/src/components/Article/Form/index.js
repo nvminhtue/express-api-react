@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { connect } from 'react-redux';
 
-const mapDispatchToProps = dispatch => ({
-  onSubmit: payload => dispatch({ type: 'SUBMIT_ARTICLE', payload }),
-  onEdit: payload => dispatch({ type: 'EDIT_ARTICLE', payload }),
-});
+import { createArticle, updateArticle } from '../../../actions/articleAction'
 
 const mapStateToProps = state => ({
   articleToEdit: state.home.articleToEdit,
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)((props) => {
+export default connect(mapStateToProps, { createArticle, updateArticle })((props) => {
+  const { setOpen, isEdit } = props;
   const [data, setData] = useState({});
 
   useEffect(() => {
-    if(props.articleToEdit) {
+    if (props.articleToEdit) {
       const { title, body, author } = data;
       setData({
         ...data,
@@ -24,7 +21,7 @@ export default connect(mapStateToProps, mapDispatchToProps)((props) => {
         [author]: props.articleToEdit.author,
       })
     }
-  })
+  }, [])
 
   const handleChangeField = (key, event) => {
     setData({
@@ -34,57 +31,47 @@ export default connect(mapStateToProps, mapDispatchToProps)((props) => {
   };
 
   const handleSubmit = () => {
-    const { title, body, author } = data;
-    const { onSubmit, onEdit, articleToEdit } = props;
-    if(!articleToEdit) {
-      return axios.post('http://localhost:8080/api/articles', {
-        title,
-        body,
-        author,
+    const { createArticle, updateArticle, isEdit, setOpen, selectedArticle } = props;
+    const resetForm = () => {
+      setData({
+        ['title']: '',
+        ['body']: '',
+        ['author']: '',
       })
-        .catch((err) => alert(err))
-        .then((res) => {
-          onSubmit(res.data.articles)
-        .then(() => setData({
-          [title]: '',
-          [body]: '',
-          [author]: '',
-        }));
-      })
+    }
+    if (!isEdit) {
+      createArticle(data, resetForm)
     } else {
-      return axios.patch(`http://localhost:8080/api/articles/${articleToEdit._id}`, {
-        title,
-        body,
-        author,
-      })
-      .then((res) => onEdit(res.data))
-      .then(() => setData({
-        [title]: '',
-        [body]: '',
-        [author]: '',
-      }));
+      // debugger
+      updateArticle({...data, _id: selectedArticle})
+      setOpen(false)
     }
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '300px'}}>
-      <input style={{width: 'auto', height: '50px', border: '2px solid gray', borderRadius: '4px'}} placeholder="Article Title"
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '300px' }}>
+      <input style={{ width: 'auto', height: '50px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Title"
         onChange={(e) => handleChangeField('title', e)}
         value={data.title}
       />
-      <textarea style={{width: 'auto', height: '70px', border: '2px solid gray', borderRadius: '4px'}} placeholder="Article Description"
+      <textarea style={{ width: 'auto', height: '70px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Description"
         onChange={(e) => handleChangeField('body', e)}
         value={data.body}
       />
-      <input style={{width: 'auto', height: '50px',border: '2px solid gray', borderRadius: '4px'}} placeholder="Article Author"
+      <input style={{ width: 'auto', height: '50px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Author"
         onChange={(e) => handleChangeField('author', e)}
         value={data.author}
       />
-      <button style={{alignSelf: 'flex-end', height: "35px", width: "70px", backgroundColor: '#3b77d6', border: '2px solid gray', borderRadius: '4px'}}
+      <button style={{ alignSelf: 'flex-end', height: "35px", width: "70px", backgroundColor: '#3b77d6', border: '2px solid gray', borderRadius: '4px' }}
         onClick={handleSubmit}
       >
         Submit
       </button>
+      {isEdit && <button style={{ alignSelf: 'flex-end', height: "35px", width: "70px", backgroundColor: '#3b77d6', border: '2px solid gray', borderRadius: '4px' }}
+        onClick={() => setOpen(false)}
+      >
+        Cancel
+      </button>}
     </div>
   )
 });
