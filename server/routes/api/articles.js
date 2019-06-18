@@ -30,9 +30,10 @@ router.post('/', (req, res, next) => {
   }
 
   const finalArticle = new Articles(body);
-  return finalArticle.save()
+  finalArticle.save()
     .then(() => res.json({ articles: finalArticle.toJSON() }))
     .catch(next)
+  return finalArticle;
 });
 
 router.get('/', (req, res, next) => {
@@ -59,9 +60,8 @@ router.get('/:id', (req, res, next)  => {
   });
 });
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id', async (req, res, next) => {
   const { body } = req;
-
   if(typeof body.title !== 'undefined') {
     req.article.title = body.title;
   }
@@ -74,15 +74,21 @@ router.patch('/:id', (req, res, next) => {
     req.article.body = body.body;
   }
 
-  return req.article.save()
-    .then(() => res.json({ article: req.article.toJSON() }))
+  req.article.save()
+    .then(() => {
+      res.json({ article: req.article.toJSON() })
+    })
     .catch(next);
+  return req.article.toJSON();
 });
 
-router.delete('/:id', (req, res, next) => {
-  return Articles.findByIdAndRemove(req.article._id)
-    .then(() => res.sendStatus(200))
-    .catch(next);
+router.delete('/:id', async (req, res, next) => {
+  try {
+    await Articles.findByIdAndRemove(req.article._id)
+    res.send({id: req.article._id})
+  } catch(err) {
+    //do nothing
+  }
 });
 
 module.exports = router;

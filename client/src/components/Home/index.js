@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import moment from 'moment';
 import { connect } from 'react-redux';
 
 import Form from '../../components/Article/Form';
+import { fetchArticles, deleteArticle } from '../../actions/articleAction'
+import {EditModal} from '../Article/Form/ModalForm';
 
 const mapStateToProps = state => {
   return {
@@ -11,31 +13,34 @@ const mapStateToProps = state => {
   }
 };
 
-const mapDispatchToProps = dispatch => ({
-  onLoad: payload => dispatch({ type: 'HOME_PAGE_LOADED', payload }),
-  onDelete: id => dispatch({ type: 'DELETE_ARTICLE', id }),
-  setEdit: article => dispatch({ type: 'SET_EDIT', article }),
-});
+// const mapDispatchToProps = dispatch => ({
+//   onLoad: () => {
+//     dispatch({ type: 'HOME_PAGE_LOADED' })
+//   },
+//   onDelete: id => dispatch({ type: 'DELETE_ARTICLE', id }),
+//   setEdit: article => dispatch({ type: 'SET_EDIT', article }),
+// });
 
-export default connect(mapStateToProps, mapDispatchToProps)((props) => {
-  const { onLoad, articles = [] } = props;
-
+export default connect(mapStateToProps, { fetchArticles, deleteArticle })((props) => {
+  const { articles = [], fetchArticles, deleteArticle} = props;
   useEffect(() => {
-    axios.get('http://localhost:8080/api/articles')
-      .then((res) => onLoad(res.data))
+    fetchArticles();
   }, [])
 
-  const handleDelete = (id) => {
-   const { onDelete } = props;
+  const [isOpen, setOpen] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState(null)
 
-   return axios.delete(`http://localhost:8080/api/articles/${id}`)
-    .then(() => onDelete(id));
+  const handleDelete = (article) => {
+    setSelectedArticle(article._id);
+    deleteArticle(article)
   }
 
-  const handleEdit = (article) => {
-    const { setEdit } = props;
+  const handleEdit = (id) => {
+    // const { setEdit } = props;
 
-    setEdit(article);
+    // setEdit(article);
+    setSelectedArticle(id);
+    setOpen(true);
   }
 
   return (
@@ -59,9 +64,10 @@ export default connect(mapStateToProps, mapDispatchToProps)((props) => {
                       <span>{moment(new Date(article.updatedAt)).fromNow()}</span>
                     </div>
                     <div>
-                      <div onClick={() => handleEdit(article)}>EDIT</div>
-                      <div onClick={() => handleDelete(article._id)}>DELETE</div>
+                      <div onClick={() => handleEdit(article._id)}>EDIT</div>
+                      <div onClick={() => handleDelete(article)}>DELETE</div>
                     </div>
+                    <EditModal {...{ isOpen, setOpen, selectedArticle}} />
                   </div>
                 )
               })}
