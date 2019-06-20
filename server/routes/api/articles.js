@@ -36,10 +36,14 @@ router.post('/', (req, res, next) => {
   return finalArticle;
 });
 
-router.get('/', (req, res, next) => {
+router.get('/page/:page', async (req, res, next) => {
+  const limitPage = 5;
+  const offset = (req.params.page - 1) * limitPage;
+  const articlesCount = await Articles.count({});
   return Articles.find()
     .sort({ createdAt: 'descending' })
-    .then((articles) => res.json( { articles: articles.map(article => article.toJSON() )}))
+    // .then((articles) => res.json( { articles: articles.map(article => article.toJSON() )}))
+    .then((articles) => res.json( { articles: articles.slice(offset, offset + limitPage), articlesCount}))
     .catch(next);
 });
 

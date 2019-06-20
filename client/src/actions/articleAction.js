@@ -9,8 +9,9 @@ export const {
   editArticle,
   deleteArticle,
   removeArticle,
+  getArticle,
 } = createActions({
-  'FETCH ARTICLES': undefined,
+  'FETCH ARTICLES': page => ({ page }),
   'CREATE ARTICLE': (data, callback) => ({ data, callback }),
   'UPDATE ARTICLE': (data) => ({ data }),
   'DELETE ARTICLE': (data) => ({ data }),
@@ -18,4 +19,5 @@ export const {
   'ADD ARTICLE': article => ({ article }),
   'EDIT ARTICLE': article => ({ article }),
   'REMOVE ARTICLE': id => ({id}),
+  'GET ARTICLE': id => ({id})
 });
