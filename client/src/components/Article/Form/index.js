@@ -1,69 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
+import { withFormik } from 'formik';
 
-import { createArticle, updateArticle } from '../../../actions/articleAction'
+import { createArticle, updateArticle, getArticle } from '../../../actions/articleAction'
 
-const mapStateToProps = state => ({
-  articleToEdit: state.home.articleToEdit,
-})
-
-export default connect(mapStateToProps, { createArticle, updateArticle })((props) => {
-  const { setOpen, isEdit } = props;
-  const [data, setData] = useState({});
-
-  useEffect(() => {
-    if (props.articleToEdit) {
-      const { title, body, author } = data;
-      setData({
-        ...data,
-        [title]: props.articleToEdit.title,
-        [body]: props.articleToEdit.body,
-        [author]: props.articleToEdit.author,
-      })
-    }
-  }, [])
-
-  const handleChangeField = (key, event) => {
-    setData({
-      ...data,
-      [key]: event.target.value,
-    });
-  };
-
-  const handleSubmit = () => {
+const FormikForm = withFormik({
+  enableReinitialize: true,
+  mapPropsToValues: (props) => {
+    const { article = {}, isEdit = false } = props;
+    if (isEdit) return article;
+    return {}
+  },
+  handleSubmit: (values, {props}) => {
     const { createArticle, updateArticle, isEdit, setOpen, selectedArticle } = props;
-    const resetForm = () => {
-      setData({
-        ['title']: '',
-        ['body']: '',
-        ['author']: '',
-      })
-    }
     if (!isEdit) {
-      createArticle(data, resetForm)
+      createArticle(values)
     } else {
-      // debugger
-      updateArticle({...data, _id: selectedArticle})
+      updateArticle({...values, _id: selectedArticle})
       setOpen(false)
     }
   }
+});
 
+const FormComponent = (props) => {
+  const { setOpen, isEdit, setFieldValue, values, selectedArticle, getArticle  } = props;
+  
+  useEffect(() => {
+    if(isEdit) getArticle(selectedArticle)
+  }, [])
+  // const handleSubmit = () => {
+  //   const { createArticle, updateArticle, isEdit, setOpen, selectedArticle } = props;
+  //   const resetForm = () => {
+  //     setData({
+  //       ['title']: '',
+  //       ['body']: '',
+  //       ['author']: '',
+  //     })
+  //   }
+  //   if (!isEdit) {
+  //     createArticle(data, resetForm)
+  //   } else {
+  //     updateArticle({...data, _id: selectedArticle})
+  //     setOpen(false)
+  //   }
+  // }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '300px' }}>
-      <input style={{ width: 'auto', height: '50px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Title"
-        onChange={(e) => handleChangeField('title', e)}
-        value={data.title}
+      <input name={'title'} style={{ width: 'auto', height: '50px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Title"
+        onChange={(e) => setFieldValue('title', e.target.value)}
+        value={values.title}
       />
-      <textarea style={{ width: 'auto', height: '70px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Description"
-        onChange={(e) => handleChangeField('body', e)}
-        value={data.body}
+      <input name={'body'} style={{ width: 'auto', height: '70px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Description"
+        onChange={(e) => setFieldValue('body', e.target.value)}
+        value={values.body}
       />
-      <input style={{ width: 'auto', height: '50px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Author"
-        onChange={(e) => handleChangeField('author', e)}
-        value={data.author}
+      <input name={'author'} style={{ width: 'auto', height: '50px', border: '2px solid gray', borderRadius: '4px' }} placeholder="Article Author"
+        onChange={(e) => setFieldValue('author', e.target.value)}
+        value={values.author}
       />
       <button style={{ alignSelf: 'flex-end', height: "35px", width: "70px", backgroundColor: '#3b77d6', border: '2px solid gray', borderRadius: '4px' }}
-        onClick={handleSubmit}
+        onClick={props.handleSubmit}
       >
         Submit
       </button>
@@ -74,4 +70,11 @@ export default connect(mapStateToProps, { createArticle, updateArticle })((props
       </button>}
     </div>
   )
-});
+};
+
+const mapStateToProps = (state) => {
+  return {
+    article: state.home.selectedArticle,
+  }
+}
+export default connect(mapStateToProps, { createArticle, updateArticle, getArticle })(FormikForm(FormComponent))

@@ -1,13 +1,14 @@
 import { handleActions } from 'redux-actions';
 
-import { saveDataArticles, addArticle, editArticle, removeArticle } from '../actions/articleAction'
+import { saveDataArticles, addArticle, editArticle, removeArticle, getArticle } from '../actions/articleAction'
 
 export default handleActions({
   [saveDataArticles]: (state, { payload }) => {
-    const {  articles = [] } = payload;
+    const {  articles = [], articlesCount } = payload;
     return {
       ...state,
-      articles
+      articles,
+      articlesCount,
     };
   },
   [addArticle]: (state, { payload }) => {
@@ -18,6 +19,17 @@ export default handleActions({
         article,
         ...state.articles
       ]
+    }
+  },
+  [getArticle]: (state, { payload } ) => {
+    const { id } = payload;
+    const { articles = [] } = state;
+    
+    return {
+      ...state,
+      selectedArticle: articles.find((val) => {
+        return val._id === id;
+      })
     }
   },
   [editArticle]: (state, { payload }) => {
@@ -40,47 +52,3 @@ export default handleActions({
     }
   }
 }, {})
-
-// export default (state = {}, action) => {
-//   switch(action.type) {
-//     case 'HOME_PAGE_LOADED':
-//       const { payload: { articles = [] } = [] } = action;
-//       return {
-//         ...state,
-//         articles
-//       };
-//     case 'SUBMIT_ARTICLE':
-//       return {
-//         ...state,
-//         articles: [
-//           action.payload,
-//           ...state.articles,
-//         ]
-//       };
-//     case 'DELETE_ARTICLE':
-//       return {
-//         ...state,
-//         articles: state.articles.filter((article) => article._id !== action.id),
-//       };
-//     case 'SET_EDIT':
-//       return {
-//         ...state,
-//         articleToEdit: action.article,
-//       };
-//     case 'EDIT_ARTICLE':
-//       return {
-//         ...state,
-//         articles: state.articles.map((article) => {
-//           if(article._id === action.payload.article._id) {
-//             return {
-//               ...action.payload.article,
-//             }
-//           }
-//           return article;
-//         }),
-//         articleToEdit: undefined,
-//       }
-//     default:
-//       return state;
-//   }
-// };
