@@ -4,9 +4,10 @@ import axios from 'axios';
 import { fetchArticles, saveDataArticles, addArticle, createArticle,
   updateArticle, editArticle, deleteArticle, removeArticle } from '../actions/articleAction'
 
-function* fetchArticlesSaga() {
+function* fetchArticlesSaga(action) {
+  const { payload: { page }} = action;
   try {
-    const respone = yield call(axios.get, 'http://localhost:8080/api/articles')
+    const respone = yield call(axios.get, `http://localhost:8080/api/articles/page/${page + 1}`)
     yield put(saveDataArticles(respone.data))
   } catch (e) {
     //do nothing
@@ -52,7 +53,7 @@ function* deleteArticleSaga(action) {
 }
 
 export default function*() {
-  yield takeLatest (fetchArticles, fetchArticlesSaga),
+  yield takeEvery (fetchArticles, fetchArticlesSaga),
   yield takeEvery (createArticle, createArticleSaga),
   yield takeEvery (updateArticle, updateArticleSaga),
   yield takeEvery (deleteArticle, deleteArticleSaga)
